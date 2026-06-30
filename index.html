@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kaelen">
+<meta name="theme-color" content="#2d9e6e">
+<title>Kaelen's Protocol</title>
+<style>
+:root {
+  color-scheme: light;
+  --green: #2d9e6e; --green-l: #e8f7f1; --green-m: #b8e8d4;
+  --red: #e05252; --red-l: #fdeaea;
+  --orange: #f0954a; --orange-l: #fef3e8;
+  --blue: #4a7fc1; --blue-l: #eaf0fb;
+  --purple: #8a63d2; --purple-l: #f3eefb;
+  --yellow: #c9960f; --yellow-l: #fdf8e8;
+  --gray: #6b7280; --gray-l: #f3f4f6;
+  --bg: #f0f4f0; --card: #fff; --text: #1a1a2e; --text-m: #4a5568;
+  --border: #e2e8f0; --radius: 13px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.hdr { background: linear-gradient(135deg, #2d9e6e, #1a7a52); color: #fff; padding: 14px 16px 12px; }
+.hdr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.hdr h1 { font-size: 20px; font-weight: 800; }
+.hdr-date { font-size: 12px; opacity: .8; }
+.hdr-count { text-align: right; font-size: 26px; font-weight: 900; line-height: 1; }
+.hdr-lbl { font-size: 10px; opacity: .8; }
+.prog-wrap { background: rgba(255,255,255,.25); border-radius: 99px; height: 7px; }
+.prog-fill { background: #fff; border-radius: 99px; height: 7px; transition: width .4s; }
+.prog-txt { font-size: 11px; opacity: .85; margin-top: 4px; }
+
+/* ── TABS ── */
+.tabs { display: flex; background: #fff; border-bottom: 2px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; padding: 11px 16px; font-size: 13px; font-weight: 700; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; cursor: pointer; white-space: nowrap; }
+.tab.on { color: var(--green); border-bottom-color: var(--green); }
+
+/* ── PARENT BAR ── */
+.pbar { background: #fff; border-bottom: 1px solid var(--border); padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+.pbar span { font-size: 12px; color: var(--gray); font-weight: 600; }
+.pbtn { padding: 5px 14px; border-radius: 99px; border: 2px solid var(--border); background: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+.pbtn.on { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* ── PAGE ── */
+.page { display: none; padding: 12px 14px 24px; max-width: 560px; margin: 0 auto; }
+.page.on { display: block; }
+
+/* ── BLOCK ── */
+.block { margin-bottom: 14px; }
+.block-hdr { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; padding: 0 2px; }
+.block-icon { font-size: 17px; }
+.block-title { font-size: 13px; font-weight: 800; color: var(--text-m); text-transform: uppercase; letter-spacing: .4px; }
+
+/* ── ITEM ── */
+.item { background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); margin-bottom: 7px; cursor: pointer; transition: background .15s, border-color .15s; user-select: none; }
+.item.done { border-color: var(--green-m); background: var(--green-l); }
+.item-row { display: flex; align-items: flex-start; gap: 11px; padding: 12px 13px; }
+.cb { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--border); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.item.done .cb { background: var(--green); border-color: var(--green); }
+.cb-chk { display: none; color: #fff; font-size: 12px; font-weight: 900; }
+.item.done .cb-chk { display: block; }
+.ibody { flex: 1; min-width: 0; }
+.ititle { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.item.done .ititle { color: var(--green); text-decoration: line-through; text-decoration-color: var(--green-m); }
+.idetail { font-size: 12px; color: var(--text-m); margin-top: 3px; line-height: 1.45; }
+.item.done .idetail { opacity: .65; color: var(--green); }
+.tags { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+.t-s { background: var(--purple-l); color: var(--purple); }
+.t-f { background: var(--orange-l); color: var(--orange); }
+.t-c { background: var(--blue-l); color: var(--blue); }
+.t-m { background: var(--green-l); color: var(--green); }
+.t-w { background: var(--yellow-l); color: var(--yellow); }
+.who { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 99px; }
+.who-mom { background: #fce7f3; color: #be185d; }
+.who-dad { background: #dbeafe; color: #1d4ed8; }
+
+/* ── SOS ── */
+.sos-card { background: var(--orange-l); border: 1.5px solid #fed7aa; border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; }
+.sos-title { font-size: 13px; font-weight: 800; color: var(--orange); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.sos-item { font-size: 13px; color: var(--text-m); padding: 5px 0; border-bottom: 1px solid #fed7aa; line-height: 1.4; }
+.sos-item:last-child { border: none; padding-bottom: 0; }
+.sos-item strong { color: var(--text); }
+
+/* ── ALERT BANNER ── */
+.alert-top { background: var(--red); color: #fff; text-align: center; font-size: 11px; font-weight: 800; padding: 6px 10px; letter-spacing: .3px; }
+.note-banner { background: #fff3cd; border: 1.5px solid #ffd966; border-radius: var(--radius); padding: 10px 13px; margin-bottom: 12px; font-size: 12px; color: #856404; font-weight: 600; }
+
+/* ── COMPLETE ── */
+.done-banner { background: linear-gradient(135deg, var(--green), #1a7a52); border-radius: var(--radius); padding: 18px; text-align: center; margin-bottom: 14px; color: #fff; display: none; }
+.done-banner.show { display: block; }
+.done-banner .emo { font-size: 36px; display: block; margin-bottom: 6px; }
+.done-banner h2 { font-size: 18px; font-weight: 800; }
+.done-banner p { font-size: 13px; opacity: .9; margin-top: 3px; }
+
+/* ── RESET ── */
+.reset-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.reset-btn { background: none; border: 1.5px solid var(--border); border-radius: 99px; padding: 5px 12px; font-size: 11px; color: var(--gray); cursor: pointer; font-weight: 700; }
+
+/* ── WATER ── */
+.water { background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 12px 14px; margin-bottom: 7px; }
+.water-title { font-size: 13px; font-weight: 800; color: var(--blue); margin-bottom: 8px; }
+.cups { display: flex; gap: 7px; flex-wrap: wrap; }
+.cup { width: 34px; height: 34px; border-radius: 9px; border: 2px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all .15s; }
+.cup.on { background: var(--blue-l); border-color: var(--blue); }
+.water-note { font-size: 11px; color: var(--gray); margin-top: 7px; }
+
+/* ── FOODS ── */
+.info { background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 13px 14px; margin-bottom: 10px; }
+.info.danger { border-color: #fca5a5; }
+.info.warn { border-color: #ffd966; }
+.info-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.info-title.red { color: var(--red); }
+.info-title.orange { color: var(--orange); }
+.info-title.green { color: var(--green); }
+.info-title.blue { color: var(--blue); }
+.info ul { padding-left: 16px; }
+.info li { font-size: 13px; color: var(--text-m); margin-bottom: 5px; line-height: 1.4; }
+.info li strong { color: var(--text); }
+.pill { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; margin: 2px; }
+.pill-r { background: var(--red-l); color: var(--red); }
+.pill-g { background: var(--green-l); color: var(--green); }
+.pill-o { background: var(--orange-l); color: var(--orange); }
+
+/* ── SUPP TABLE ── */
+.stbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.stbl th { background: var(--gray-l); padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 800; color: var(--gray); }
+.stbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.35; }
+.stbl tr:last-child td { border: none; }
+.sname { font-weight: 700; color: var(--text); }
+.sdose { color: var(--purple); font-weight: 700; font-size: 11px; }
+.stiming { color: var(--gray); font-size: 11px; margin-top: 2px; }
+
+/* ── LABS ── */
+.lab-hdr { background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 12px 14px; margin-bottom: 10px; }
+.lab-hdr-title { font-size: 14px; font-weight: 800; color: var(--blue); margin-bottom: 4px; }
+.lab-hdr-meta { font-size: 11px; color: var(--gray); line-height: 1.6; }
+.lab-section { margin-bottom: 14px; }
+.lab-section-title { font-size: 12px; font-weight: 800; color: var(--text-m); text-transform: uppercase; letter-spacing: .5px; padding: 6px 2px 5px; border-bottom: 2px solid var(--border); margin-bottom: 6px; }
+.lab-tbl { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); overflow: hidden; font-size: 12px; margin-bottom: 6px; }
+.lab-tbl th { background: var(--gray-l); padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 800; color: var(--gray); }
+.lab-tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.lab-tbl tr:last-child td { border: none; }
+.lab-tbl .analyte { font-weight: 600; color: var(--text); }
+.cls { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 11px; font-weight: 900; color: #fff; flex-shrink: 0; }
+.cls-0 { background: #6b7280; }
+.cls-1 { background: #22c55e; }
+.cls-2 { background: #84cc16; }
+.cls-3 { background: #eab308; color: #1a1a2e; }
+.cls-4 { background: #f97316; }
+.cls-5 { background: #ef4444; }
+.cls-6 { background: #991b1b; }
+.val-cell { display: flex; align-items: center; gap: 7px; }
+.val-num { font-weight: 700; font-size: 13px; }
+.cls-label { font-size: 10px; color: var(--gray); }
+.lab-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.filt-btn { padding: 5px 12px; border-radius: 99px; border: 2px solid var(--border); background: #fff; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--gray); }
+.filt-btn.on { background: var(--text); color: #fff; border-color: var(--text); }
+.total-ige { background: var(--red-l); border: 2px solid var(--red); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.total-ige .big { font-size: 28px; font-weight: 900; color: var(--red); }
+.total-ige .lbl { font-size: 12px; color: #7f1d1d; line-height: 1.5; }
+/* ── FOOTER ── */
+.foot { padding: 16px 14px; text-align: center; font-size: 11px; color: var(--gray); border-top: 1px solid var(--border); margin-top: 10px; line-height: 1.6; }
+
+@media (max-width: 360px) { .hdr h1 { font-size: 18px; } }
+</style>
+</head>
+<body>
+
+<div class="alert-top">🚨 CARRY EPINEPHRINE AT ALL TIMES — PEANUT · WALNUT · SESAME · MILK · SHELLFISH (Class VI)</div>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <h1>🌿 Kaelen's Day</h1>
+      <div class="hdr-date" id="dateDisplay"></div>
+    </div>
+    <div>
+      <div class="hdr-count" id="cntDisplay">0/0</div>
+      <div class="hdr-lbl">done today</div>
+    </div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <div class="prog-txt" id="progTxt">Start Kaelen's day 💪</div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" onclick="showTab('today',this)">📋 Today</div>
+  <div class="tab" onclick="showTab('foods',this)">🥗 Foods</div>
+  <div class="tab" onclick="showTab('supps',this)">💊 Supplements</div>
+  <div class="tab" onclick="showTab('alerts',this)">⚠️ Allergies</div>
+  <div class="tab" onclick="showTab('labs',this)">📊 Labs</div>
+</div>
+
+<div class="pbar">
+  <span>Who's with Kaelen?</span>
+  <button class="pbtn on" id="btnMom" onclick="setParent('mom')">Mom</button>
+  <button class="pbtn" id="btnDad" onclick="setParent('dad')">Dad</button>
+</div>
+
+<!-- ══ TODAY ══ -->
+<div class="page on" id="pg-today">
+
+  <div class="done-banner" id="doneBanner">
+    <span class="emo">🎉</span>
+    <h2>Amazing day for Kaelen!</h2>
+    <p>Every step done. You're doing great.</p>
+  </div>
+
+  <div class="reset-row"><button class="reset-btn" onclick="resetDay()">↺ Reset today</button></div>
+
+  <!-- MORNING -->
+  <div class="block">
+    <div class="block-hdr"><span class="block-icon">🌅</span><span class="block-title">Morning — Wake Up</span></div>
+
+    <div class="item" id="item-allentox-am" onclick="toggle('allentox-am')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Allen-Tox II — 1 dropper</div>
+          <div class="idetail">Bedside. First thing in the morning before getting up.</div>
+          <div class="tags"><span class="tag t-s">Supplement</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-water" onclick="toggle('water')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Water + pinch of salt</div>
+          <div class="idetail">Tiny pinch of sea salt or pink Himalayan. Electrolytes for absorption.</div>
+          <div class="tags"><span class="tag t-f">Hydration</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-am-supps" onclick="toggle('am-supps')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Morning supplements</div>
+          <div class="idetail"><strong>D-Hist Jr</strong> 2 tabs · <strong>Skinesa</strong> 1 cap · <strong>P5P 50</strong> 1 cap · <strong>Vitamin D3</strong> 800 IU (with food)</div>
+          <div class="tags"><span class="tag t-s">Supplement Bundle</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-tranquil-am" onclick="toggle('tranquil-am')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Tranquil Tummy — 30 drops before breakfast</div>
+          <div class="idetail">5–10 min before eating. Into mouth or in a little water.</div>
+          <div class="tags"><span class="tag t-s">Before Meal</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-breakfast" onclick="toggle('breakfast')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Breakfast ✓</div>
+          <div class="idetail">Real food. Protein + fat + fiber. See Foods tab for what's safe.</div>
+          <div class="tags"><span class="tag t-f">Meal</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATH & SKIN -->
+  <div class="block">
+    <div class="block-hdr"><span class="block-icon">🛁</span><span class="block-title">Bath & Skin</span></div>
+
+    <div class="item" id="item-bath" onclick="toggle('bath')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Bath or shower</div>
+          <div class="idetail">Gentle, fragrance-free wash.</div>
+          <div class="tags"><span class="tag t-c">Hygiene</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-skin" onclick="toggle('skin')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Skin routine after bath</div>
+          <div class="idetail">Pat dry → <strong>Briotech spray</strong> all over (2–3x/week) → <strong>Sven's Island Eczema Soothe & Shield</strong> lotion (daily, prevents infection) → moisturizer.</div>
+          <div class="tags"><span class="tag t-c">Skin</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-castor" onclick="toggle('castor')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Castor oil massage</div>
+          <div class="idetail">Dime-sized on belly, starting at liver (right side). Clockwise 10+ times. Leave 5–10 min then rinse, OR wear old T-shirt to bed. Also great on eczema patches.</div>
+          <div class="tags"><span class="tag t-c">Skin + Liver</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTSIDE -->
+  <div class="block">
+    <div class="block-hdr"><span class="block-icon">🌳</span><span class="block-title">Outside Time</span></div>
+
+    <div class="item" id="item-outside" onclick="toggle('outside')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Walk + barefoot grounding</div>
+          <div class="idetail">30 min movement daily. Barefoot in grass at least <strong>1x per week</strong> (grounding mat indoors also works).</div>
+          <div class="tags"><span class="tag t-m">Movement</span><span class="tag t-w">Grounding 1x/week</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-joy" onclick="toggle('joy')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Joy activity 🎨 🎵 🌳</div>
+          <div class="idetail">Drawing, dancing/music, or outdoor play. Something that makes Kaelen laugh!</div>
+          <div class="tags"><span class="tag t-m">Joy</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDAY -->
+  <div class="block">
+    <div class="block-hdr"><span class="block-icon">☀️</span><span class="block-title">Midday</span></div>
+
+    <div class="item" id="item-nettle" onclick="toggle('nettle')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Nettle Tea — 1 to 1.5 cups</div>
+          <div class="idetail">Traditional Medicinals brand. Counts toward water goal. Liver, allergy + histamine support.</div>
+          <div class="tags"><span class="tag t-s">Herbal</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-tranquil-lunch" onclick="toggle('tranquil-lunch')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Tranquil Tummy — 30 drops before lunch</div>
+          <div class="idetail">5–10 min before eating.</div>
+          <div class="tags"><span class="tag t-s">Before Meal</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-lunch" onclick="toggle('lunch')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Lunch ✓</div>
+          <div class="idetail">Protein + fat + fiber. Safe foods only.</div>
+          <div class="tags"><span class="tag t-f">Meal</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATER TRACKER -->
+    <div class="water">
+      <div class="water-title">💧 Water today</div>
+      <div class="cups" id="cups"></div>
+      <div class="water-note" id="waterNote">Tap each drop as Kaelen drinks (each = 4 oz). Goal: ½ his body weight in oz.</div>
+    </div>
+  </div>
+
+  <!-- EVENING -->
+  <div class="block">
+    <div class="block-hdr"><span class="block-icon">🌇</span><span class="block-title">Dinner</span></div>
+
+    <div class="item" id="item-tranquil-dinner" onclick="toggle('tranquil-dinner')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Tranquil Tummy — 30 drops before dinner</div>
+          <div class="idetail">5–10 min before eating.</div>
+          <div class="tags"><span class="tag t-s">Before Meal</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-dinner" onclick="toggle('dinner')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Dinner ✓</div>
+          <div class="idetail">Real food. Safe foods only. Cook fresh — no leftovers.</div>
+          <div class="tags"><span class="tag t-f">Meal</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEDTIME -->
+  <div class="block">
+    <div class="block-hdr"><span class="block-icon">🌙</span><span class="block-title">Bedtime</span></div>
+
+    <div class="item" id="item-pm-supps" onclick="toggle('pm-supps')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Bedtime supplements</div>
+          <div class="idetail"><strong>Allen-Tox II</strong> 1 dropper (bedside) · <strong>Sulphur 30C</strong> 3–5 drops · <strong>EllaOlla Magnesium</strong></div>
+          <div class="tags"><span class="tag t-s">Supplement Bundle</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" id="item-calm" onclick="toggle('calm')">
+      <div class="item-row">
+        <div class="cb"><span class="cb-chk">✓</span></div>
+        <div class="ibody">
+          <div class="ititle">Renzo Captain Calm (if needed)</div>
+          <div class="idetail">Only if Kaelen seems anxious or unsettled.</div>
+          <div class="tags"><span class="tag t-s">Optional</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOS / AS NEEDED -->
+  <div class="sos-card">
+    <div class="sos-title">⚡ As Needed</div>
+    <div class="sos-item"><strong>Trauma-gen</strong> — 5 drops, 2–3x daily. Use if Kaelen is having a tantrum or feels dysregulated. Nervous system support.</div>
+    <div class="sos-item"><strong>OM Botanical Eczema &amp; Psoriasis Relief</strong> — Spot treatment on eczema flares. Softens skin.</div>
+    <div class="sos-item"><strong>D-Hist Jr flare dose</strong> — If no improvement in 3 weeks on 2 tabs 1x daily → increase to 2 tabs 2x daily.</div>
+    <div class="sos-item"><strong>Cranial Sacral Therapy</strong> — Dr. Hollon at Resolve Bodyworks, Cary St. For lymphatic + nervous system support.</div>
+  </div>
+
+  <div class="foot">
+    Dr. Thompson · Richmond Natural Medicine · 804-977-2634<br>
+    Plan updated <strong>06/29/2026</strong> · Next visit in 6–8 weeks
+  </div>
+</div>
+
+<!-- ══ FOODS ══ -->
+<div class="page" id="pg-foods">
+
+  <div class="note-banner">⚕️ <strong>Allergist note:</strong> Hold off on retesting new foods for now (Dr. Eschenbach, 06/2026).</div>
+
+  <div class="info danger">
+    <div class="info-title red">🚨 NEVER — Life-Threatening (Class VI)</div>
+    <div style="display:flex;flex-wrap:wrap;margin-top:4px;">
+      <span class="pill pill-r">Peanut</span><span class="pill pill-r">Walnut</span><span class="pill pill-r">Sesame</span><span class="pill pill-r">All Dairy / Milk</span><span class="pill pill-r">Crab</span><span class="pill pill-r">Shrimp</span><span class="pill pill-r">Lobster</span>
+    </div>
+    <div style="font-size:12px;color:#7f1d1d;margin-top:8px;font-weight:700;">Carry epinephrine auto-injector at ALL times.</div>
+  </div>
+
+  <div class="info">
+    <div class="info-title green">✅ Safe Foods (Low Histamine + Low IgE)</div>
+    <ul>
+      <li><strong>Protein:</strong> Freshly cooked chicken, turkey, lamb</li>
+      <li><strong>Grains:</strong> Quinoa, brown rice (confirm with allergist)</li>
+      <li><strong>Oils:</strong> Extra virgin olive oil, avocado oil</li>
+      <li><strong>Milk alternatives:</strong> Hemp milk, rice milk</li>
+      <li><strong>Fruits:</strong> Blueberries, cherries, mango, melon (cantaloupe/honeydew), peach, plum, grapes<br><em style="font-size:11px;">Not: citrus, strawberry, pineapple, avocado, banana, apple, pear, dates</em></li>
+      <li><strong>Vegetables:</strong> Carrots, broccoli, cauliflower, zucchini, cucumber, asparagus, beets, cabbage<br><em style="font-size:11px;">Not: spinach, eggplant, tomato, potato, onion, garlic, corn, beans, peas</em></li>
+      <li><strong>Fresh herbs:</strong> Basil, thyme, parsley (not oregano)</li>
+    </ul>
+  </div>
+
+  <div class="info danger">
+    <div class="info-title red">❌ High-Histamine — Always Avoid</div>
+    <ul>
+      <li>Fermented foods — sauerkraut, vinegar, soy sauce, kefir, kombucha, pickles</li>
+      <li>Cured / smoked meats — bacon, salami, pepperoni, hot dogs</li>
+      <li>Aged cheese (including goat cheese)</li>
+      <li>Soured foods — sour cream, buttermilk, sourdough</li>
+      <li>Dried fruit, most citrus, avocado, eggplant, spinach, tomato</li>
+      <li>Strawberries, pineapple, banana</li>
+      <li><strong>Leftovers — histamine builds as food sits. Always cook fresh!</strong></li>
+    </ul>
+  </div>
+
+  <div class="info warn">
+    <div class="info-title orange">⚠️ High IgE Grains — Use Caution</div>
+    <div style="display:flex;flex-wrap:wrap;margin-top:4px;">
+      <span class="pill pill-r">Wheat (V)</span><span class="pill pill-r">Rye (V)</span><span class="pill pill-r">Barley (V)</span><span class="pill pill-r">Oat (V)</span><span class="pill pill-r">Corn (IV)</span><span class="pill pill-o">Rice (IV)</span>
+    </div>
+    <div style="font-size:12px;color:#856404;margin-top:8px;">Confirm with Dr. Eschenbach before using. Quinoa untested — likely safest option.</div>
+  </div>
+
+  <div class="info">
+    <div class="info-title blue">🫖 Daily Drinks</div>
+    <ul>
+      <li><strong>Water:</strong> Half Kaelen's body weight in ounces daily. Add tiny pinch sea salt.</li>
+      <li><strong>Nettle Tea:</strong> 1–1.5 cups (Traditional Medicinals). Counts as water. Mix with other low-histamine flavored teas.</li>
+    </ul>
+  </div>
+
+  <div class="foot">⚕️ Always confirm new foods with both doctors before introducing. IgE panel: 11/25/2025.</div>
+</div>
+
+<!-- ══ SUPPLEMENTS ══ -->
+<div class="page" id="pg-supps">
+
+  <div class="note-banner">⚠️ Start each new supplement one at a time, 2–3 days apart. Watch for reactions.</div>
+
+  <div class="info" style="padding: 0; overflow: hidden;">
+    <table class="stbl">
+      <thead><tr><th>Supplement</th><th>Dose</th><th>When</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="sname">Allen-Tox II</div><div style="font-size:11px;color:var(--gray);">Histamine clearance + adrenal</div></td>
+          <td><div class="sdose">1 dropper</div></td>
+          <td><div class="stiming">🌅 Morning bedside<br>🌙 Bedtime bedside</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">D-Hist Jr</div><div style="font-size:11px;color:var(--gray);">Histamine clearance. High dose for flares.</div></td>
+          <td><div class="sdose">2 tabs 1–2x/day</div></td>
+          <td><div class="stiming">With or w/o food<br>↑ to 2x if no improvement in 3 wks</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">Tranquil Tummy</div><div style="font-size:11px;color:var(--gray);">Digestion, histamine breakdown, calms nervous system</div></td>
+          <td><div class="sdose">30 drops</div></td>
+          <td><div class="stiming">5–10 min before each meal</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">Skinesa</div><div style="font-size:11px;color:var(--gray);">Microbiome support</div></td>
+          <td><div class="sdose">1 cap</div></td>
+          <td><div class="stiming">Daily, morning</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">P5P 50 (Active B6)</div><div style="font-size:11px;color:var(--gray);">Histamine clearance</div></td>
+          <td><div class="sdose">1 cap</div></td>
+          <td><div class="stiming">Daily, with or w/o food</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">Vitamin D3</div><div style="font-size:11px;color:var(--gray);">Immune support (Mary Ruth's or other)</div></td>
+          <td><div class="sdose">800 IU</div></td>
+          <td><div class="stiming">Daily with food</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">Trauma-gen</div><div style="font-size:11px;color:var(--gray);">Nervous system regulation (tantrums/dysregulation)</div></td>
+          <td><div class="sdose">5 drops</div></td>
+          <td><div class="stiming">2–3x daily as needed</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">Homeosophic Sulphur 30C</div><div style="font-size:11px;color:var(--gray);">Eczema, sleep, mood</div></td>
+          <td><div class="sdose">3–5 drops</div></td>
+          <td><div class="stiming">🌙 Daily, bedtime</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">EllaOlla Magnesium (Unflavored)</div><div style="font-size:11px;color:var(--gray);">Sleep + stress</div></td>
+          <td><div class="sdose">Per label</div></td>
+          <td><div class="stiming">🌙 Bedtime</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">Renzo Captain Calm</div><div style="font-size:11px;color:var(--gray);">Calming — optional</div></td>
+          <td><div class="sdose">Per label</div></td>
+          <td><div class="stiming">As needed (anxiety)</div></td>
+        </tr>
+        <tr>
+          <td><div class="sname">Nettle Tea</div><div style="font-size:11px;color:var(--gray);">Traditional Medicinals</div></td>
+          <td><div class="sdose">1–1.5 cups</div></td>
+          <td><div class="stiming">Daily, counts as water</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info" style="margin-top:10px;">
+    <div class="info-title blue">🧴 Skin Products</div>
+    <ul>
+      <li><strong>Briotech Hypochlorous Acid</strong> — Spray all over after bath. Pat dry first. 2–3x/week. Some dryness possible.</li>
+      <li><strong>Sven's Island Eczema Soothe &amp; Shield System</strong> — Herbal lotion, daily. Prevents infection.</li>
+      <li><strong>OM Botanical Eczema &amp; Psoriasis Relief</strong> — Spot treat flares only. Softens skin.</li>
+      <li><strong>Castor oil</strong> — Dime-sized, clockwise on belly (liver area). Also on eczema patches. 5–10 min then rinse or sleep in old T-shirt.</li>
+    </ul>
+  </div>
+
+  <div class="info" style="margin-top:10px;">
+    <div class="info-title" style="color:var(--purple);">🏥 Recommended Therapy</div>
+    <ul>
+      <li><strong>Cranial Sacral Therapy</strong> — Dr. Hollon at <strong>Resolve Bodyworks</strong>, Cary St. For cranial sacral or lymphatic massage. Nervous system + immune support.</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    Questions: patients@richmondnaturalmed.com<br>
+    Refills: 804-977-2634 or info@richmondnaturalmed.com (allow 24–48 hrs)
+  </div>
+</div>
+
+<!-- ══ LABS ══ -->
+<div class="page" id="pg-labs">
+
+  <div class="total-ige">
+    <div class="big">9,901</div>
+    <div class="lbl"><strong>Total IgE (IU/mL)</strong><br>Normal range: 14–710<br>Kaelen is <strong>14× above upper limit</strong><br><span style="font-size:10px;">Collected 11/25/2025 · LabCorp Burlington</span></div>
+  </div>
+
+  <div class="lab-filter">
+    <span style="font-size:11px;font-weight:700;color:var(--gray);align-self:center;">Filter:</span>
+    <button class="filt-btn on" onclick="filterLabs('all',this)">All</button>
+    <button class="filt-btn" onclick="filterLabs('6',this)"><span style="color:#991b1b">●</span> VI</button>
+    <button class="filt-btn" onclick="filterLabs('5',this)"><span style="color:#ef4444">●</span> V</button>
+    <button class="filt-btn" onclick="filterLabs('4',this)"><span style="color:#f97316">●</span> IV</button>
+    <button class="filt-btn" onclick="filterLabs('3',this)"><span style="color:#eab308">●</span> III</button>
+    <button class="filt-btn" onclick="filterLabs('2',this)"><span style="color:#84cc16">●</span> II–I</button>
+  </div>
+
+  <!-- KEY -->
+  <div style="background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:11px;font-weight:700;color:var(--gray);">Class:</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="cls cls-6">VI</span> &gt;100 Extreme</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="cls cls-5">V</span> 19–100 Very High</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="cls cls-4">IV</span> 3.9–19 High</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="cls cls-3">III</span> 1.4–3.9 Mod</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="cls cls-2">II</span> 0.56–1.4</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="cls cls-1">I</span> 0.32–0.55</span>
+  </div>
+
+  <!-- REPORT 1 -->
+  <div class="lab-hdr">
+    <div class="lab-hdr-title">Report 1 — Spices / Seeds Panel</div>
+    <div class="lab-hdr-meta">Specimen: 329-141-3160-0 · Collected: 11/25/2025 · Reported: 12/01/2025<br>Ordering: Dr. W. Eschenbach · Allergy Partners Richmond</div>
+  </div>
+  <table class="lab-tbl" id="tbl-r1">
+    <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+    <tbody>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Linseed / Flaxseed</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">28.00</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="3" class="lab-row"><td class="analyte">Caraway</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">1.46</span><span class="cls-label">Moderate</span></div></td></tr>
+      <tr data-cls="2" class="lab-row"><td class="analyte">Ginger</td><td><div class="val-cell"><span class="cls cls-2">II</span><span class="val-num">1.39</span><span class="cls-label">Moderate</span></div></td></tr>
+      <tr data-cls="1" class="lab-row"><td class="analyte">Oregano</td><td><div class="val-cell"><span class="cls cls-1">I</span><span class="val-num">0.43</span><span class="cls-label">Low</span></div></td></tr>
+    </tbody>
+  </table>
+
+  <!-- REPORT 2 -->
+  <div class="lab-hdr" style="margin-top:16px;">
+    <div class="lab-hdr-title">Report 2 — Comprehensive Panel</div>
+    <div class="lab-hdr-meta">Specimen: 329-141-3241-0 · Collected: 11/25/2025 · Reported: 12/05/2025<br>Ordering: Dr. W. Eschenbach · Allergy Partners Richmond</div>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🏠 Environmental / Inhalants</div>
+    <table class="lab-tbl" id="tbl-env">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Dog Dander</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">German Cockroach</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">63.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Cat Dander</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">48.20</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">D. farinae (Dust Mite)</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">47.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">D. pteronyssinus (Dust Mite)</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">38.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Elm, American</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">16.30</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Silver Birch</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">12.90</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Cottonwood</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">11.70</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Ragweed (Short)</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">9.80</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Pecan / Hickory Tree</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">8.05</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Aspergillus fumigatus (Mold)</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">7.79</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Bermuda Grass</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">6.47</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Cedar, Mountain</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">6.15</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Penicillium (Mold)</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">5.86</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Timothy Grass</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">4.70</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Cladosporium (Mold)</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">4.45</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Sheep Sorrel (Weed)</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">4.76</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Alternaria (Mold)</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">3.84</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Maple / Box Elder Tree</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">3.63</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Johnson Grass</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">3.58</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Oak, White (Tree)</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">3.82</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Pigweed (Weed)</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">2.17</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Mouse Urine</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">1.62</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="2" class="lab-row"><td class="analyte">White Mulberry (Tree)</td><td><div class="val-cell"><span class="cls cls-2">II</span><span class="val-num">1.01</span><span class="cls-label">Moderate</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🥜 Tree Nuts</div>
+    <table class="lab-tbl" id="tbl-nuts">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Peanut</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Walnut</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Pecan Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">87.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Pistachio Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">68.20</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Cashew Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">62.60</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Hazelnut (Filbert)</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">54.20</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Almond</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">47.30</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Brazil Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">33.40</span><span class="cls-label">Very High</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🦞 Shellfish</div>
+    <table class="lab-tbl" id="tbl-shell">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Crab</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Shrimp</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Lobster</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Clam</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">34.60</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Scallop</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">32.40</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Oyster</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">19.20</span><span class="cls-label">Very High</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🐟 Fish</div>
+    <table class="lab-tbl" id="tbl-fish">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Salmon</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">24.80</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Trout</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">22.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Walleye Pike</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">13.70</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Codfish</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">11.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Tuna</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">10.90</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Mackerel</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">10.90</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Halibut</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">10.80</span><span class="cls-label">Very High</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🥛 Dairy & Egg</div>
+    <table class="lab-tbl" id="tbl-dairy">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Milk (whole)</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Casein</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Beta-Lactoglobulin (whey)</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">43.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Alpha-Lactalbumin (whey)</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">38.50</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Egg White</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">17.40</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Ovalbumin (egg component)</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">13.20</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Ovomucoid (egg component)</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">2.80</span><span class="cls-label">Moderate-High</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🌾 Grains</div>
+    <table class="lab-tbl" id="tbl-grains">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Wheat</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">51.20</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Oat</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">45.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Barley</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">36.50</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Rye</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">35.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Corn</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">16.40</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Rice</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">14.60</span><span class="cls-label">Very High</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🌿 Seeds & Other</div>
+    <table class="lab-tbl" id="tbl-seeds">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="6" class="lab-row"><td class="analyte">Sesame Seed</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Sunflower Seed</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">27.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Linseed / Flaxseed</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">28.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Yeast</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">16.60</span><span class="cls-label">Very High</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🫘 Legumes & Beans</div>
+    <table class="lab-tbl" id="tbl-legumes">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Green Pea</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">58.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Chickpea</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">37.30</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Kidney Bean</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">32.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">White Bean</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">27.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Green Bean</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">23.00</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Lima Bean</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">12.30</span><span class="cls-label">Very High</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-section-title">🥦 Vegetables & Fruit</div>
+    <table class="lab-tbl" id="tbl-veg">
+      <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+      <tbody>
+        <tr data-cls="5" class="lab-row"><td class="analyte">Coconut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">21.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Tomato</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">15.60</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Potato, White</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">13.50</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Banana</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">14.10</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Garlic</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">14.80</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Pumpkin</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">5.94</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Plantain, English</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">6.06</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Date</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">6.01</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="4" class="lab-row"><td class="analyte">Pear</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">4.35</span><span class="cls-label">Very High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Sweet Potato</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">2.94</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Onion</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">2.48</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="3" class="lab-row"><td class="analyte">Apple</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">2.63</span><span class="cls-label">Moderate-High</span></div></td></tr>
+        <tr data-cls="2" class="lab-row"><td class="analyte">Lettuce</td><td><div class="val-cell"><span class="cls cls-2">II</span><span class="val-num">1.08</span><span class="cls-label">Moderate</span></div></td></tr>
+        <tr data-cls="2" class="lab-row"><td class="analyte">Black Peppercorn</td><td><div class="val-cell"><span class="cls cls-2">II</span><span class="val-num">0.66</span><span class="cls-label">Moderate</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- REPORT 3 -->
+  <div class="lab-hdr" style="margin-top:16px;">
+    <div class="lab-hdr-title">Report 3 — Food Panel (Confirmatory)</div>
+    <div class="lab-hdr-meta">Specimen: 329-141-3376-0 · Collected: 11/25/2025 · Reported: 11/29/2025<br>Ordering: Dr. W. Eschenbach · Allergy Partners Richmond HDH</div>
+  </div>
+  <div style="font-size:12px;color:var(--gray);margin-bottom:8px;padding:0 2px;">This panel confirms the major food allergens from the same blood draw. Results are consistent with Report 2.</div>
+  <table class="lab-tbl" id="tbl-r3">
+    <thead><tr><th>Allergen</th><th>Result (kU/L)</th></tr></thead>
+    <tbody>
+      <tr data-cls="6" class="lab-row"><td class="analyte">Peanut</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+      <tr data-cls="6" class="lab-row"><td class="analyte">Walnut</td><td><div class="val-cell"><span class="cls cls-6">VI</span><span class="val-num">&gt;100</span><span class="cls-label">Extreme</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Pecan Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">92.20</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Cashew Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">67.80</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Pistachio Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">52.80</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Hazelnut (Filbert)</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">52.20</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Almond</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">43.90</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Brazil Nut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">32.40</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Wheat</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">41.50</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Barley</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">31.20</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Coconut</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">23.50</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Green Pea</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">61.30</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">White Bean</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">26.70</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Kidney Bean</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">23.50</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="5" class="lab-row"><td class="analyte">Green Bean</td><td><div class="val-cell"><span class="cls cls-5">V</span><span class="val-num">23.80</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="4" class="lab-row"><td class="analyte">Tomato</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">14.30</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="4" class="lab-row"><td class="analyte">Egg White</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">14.50</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="4" class="lab-row"><td class="analyte">Potato, White</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">13.40</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="4" class="lab-row"><td class="analyte">Garlic</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">15.80</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="4" class="lab-row"><td class="analyte">Yeast</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">15.80</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="4" class="lab-row"><td class="analyte">Pear</td><td><div class="val-cell"><span class="cls cls-4">IV</span><span class="val-num">4.35</span><span class="cls-label">Very High</span></div></td></tr>
+      <tr data-cls="3" class="lab-row"><td class="analyte">Onion</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">2.18</span><span class="cls-label">Moderate-High</span></div></td></tr>
+      <tr data-cls="3" class="lab-row"><td class="analyte">Apple</td><td><div class="val-cell"><span class="cls cls-3">III</span><span class="val-num">2.63</span><span class="cls-label">Moderate-High</span></div></td></tr>
+      <tr data-cls="2" class="lab-row"><td class="analyte">Black Peppercorn</td><td><div class="val-cell"><span class="cls cls-2">II</span><span class="val-num">0.66</span><span class="cls-label">Moderate</span></div></td></tr>
+    </tbody>
+  </table>
+
+  <div class="foot">
+    Lab: LabCorp Burlington · Dir: Sanjai Nagendra, MD<br>
+    Ordering: Dr. W. Eschenbach · NPI: 1659733947 · 804-559-0370<br>
+    All specimens collected 11/25/2025 · <em>Retesting: hold per allergist (06/2026)</em>
+  </div>
+</div>
+
+<!-- ══ ALLERGIES ══ -->
+<div class="page" id="pg-alerts">
+
+  <div class="note-banner">⚕️ <strong>Allergist (Dr. Eschenbach):</strong> Hold off on retesting new foods. Total IgE = 9,901 (normal: 14–710). IgE panel: 11/25/2025.</div>
+
+  <div class="info danger">
+    <div class="info-title red">🚨 Class VI — Anaphylaxis Risk</div>
+    <div style="display:flex;flex-wrap:wrap;margin-top:6px;">
+      <span class="pill pill-r">Peanut</span><span class="pill pill-r">Walnut</span><span class="pill pill-r">Sesame</span><span class="pill pill-r">Milk / Casein</span><span class="pill pill-r">Crab</span><span class="pill pill-r">Shrimp</span><span class="pill pill-r">Lobster</span>
+    </div>
+  </div>
+
+  <div class="info danger">
+    <div class="info-title orange">⛔ Class V — Very High (strictly avoid)</div>
+    <div style="display:flex;flex-wrap:wrap;margin-top:6px;">
+      <span class="pill pill-r">Hazelnut</span><span class="pill pill-r">Brazil Nut</span><span class="pill pill-r">Almond</span><span class="pill pill-r">Pecan</span><span class="pill pill-r">Cashew</span><span class="pill pill-r">Pistachio</span><span class="pill pill-r">Wheat</span><span class="pill pill-r">Rye</span><span class="pill pill-r">Barley</span><span class="pill pill-r">Oat</span><span class="pill pill-r">Salmon</span><span class="pill pill-r">Trout</span><span class="pill pill-r">Coconut</span><span class="pill pill-r">Green Pea</span><span class="pill pill-r">White Bean</span><span class="pill pill-r">Sunflower Seed</span><span class="pill pill-r">Kidney Bean</span><span class="pill pill-r">Chickpea</span><span class="pill pill-r">Green Bean</span><span class="pill pill-r">Linseed/Flax</span>
+    </div>
+  </div>
+
+  <div class="info warn">
+    <div class="info-title orange">⚠️ Class IV — Very High (avoid)</div>
+    <div style="display:flex;flex-wrap:wrap;margin-top:6px;">
+      <span class="pill pill-o">Egg</span><span class="pill pill-o">Tomato</span><span class="pill pill-o">Potato</span><span class="pill pill-o">Garlic</span><span class="pill pill-o">Yeast</span><span class="pill pill-o">Banana</span><span class="pill pill-o">Corn</span><span class="pill pill-o">Rice</span><span class="pill pill-o">Pear</span><span class="pill pill-o">Pumpkin</span><span class="pill pill-o">Lima Bean</span><span class="pill pill-o">Codfish</span><span class="pill pill-o">Tuna</span><span class="pill pill-o">Mackerel</span><span class="pill pill-o">Halibut</span><span class="pill pill-o">Date</span>
+    </div>
+  </div>
+
+  <div class="info">
+    <div class="info-title orange">⚡ Class III — High (monitor)</div>
+    <div style="display:flex;flex-wrap:wrap;margin-top:6px;">
+      <span class="pill pill-o">Caraway</span><span class="pill pill-o">Ginger</span><span class="pill pill-o">Sweet Potato</span><span class="pill pill-o">Onion</span><span class="pill pill-o">Apple</span><span class="pill pill-o">Oregano</span>
+    </div>
+  </div>
+
+  <div class="info">
+    <div class="info-title">🏠 Environmental Allergens</div>
+    <ul>
+      <li><strong>Dog dander</strong> — Class VI (minimize exposure)</li>
+      <li><strong>Cat dander + Dust mites</strong> — Class V (use mattress covers, wash bedding weekly)</li>
+      <li><strong>German cockroach</strong> — Class V (keep kitchen spotless)</li>
+      <li><strong>Molds</strong> — Class III–IV (Aspergillus, Penicillium, Cladosporium — use humidifier, no damp areas)</li>
+      <li><strong>Grasses + Trees + Ragweed</strong> — Class III–IV (check pollen counts)</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    Dr. Eschenbach · Allergy Partners Richmond · 804-559-0370<br>
+    Dr. Thompson · Richmond Natural Medicine · 804-977-2634
+  </div>
+</div>
+
+<script>
+const DAY_KEY = 'k_' + new Date().toISOString().split('T')[0];
+let state = JSON.parse(localStorage.getItem(DAY_KEY) || '{}');
+let cupsCount = parseInt(localStorage.getItem(DAY_KEY + '_c') || '0');
+let parent = localStorage.getItem('k_parent') || 'mom';
+
+const ITEMS = ['allentox-am','water','am-supps','tranquil-am','breakfast',
+               'bath','skin','castor',
+               'outside','joy',
+               'nettle','tranquil-lunch','lunch',
+               'tranquil-dinner','dinner',
+               'pm-supps','calm'];
+
+function setDate() {
+  const d = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateDisplay').textContent = days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate();
+}
+
+function setParent(p) {
+  parent = p;
+  localStorage.setItem('k_parent', p);
+  document.getElementById('btnMom').className = 'pbtn' + (p==='mom'?' on':'');
+  document.getElementById('btnDad').className = 'pbtn' + (p==='dad'?' on':'');
+}
+
+function toggle(id) {
+  state[id] = !state[id];
+  if (state[id]) state[id+'_by'] = parent; else delete state[id+'_by'];
+  localStorage.setItem(DAY_KEY, JSON.stringify(state));
+  render(); updateProgress();
+}
+
+function render() {
+  ITEMS.forEach(id => {
+    const el = document.getElementById('item-'+id); if (!el) return;
+    const done = !!state[id];
+    el.className = 'item' + (done ? ' done' : '');
+    const old = el.querySelector('.who'); if (old) old.remove();
+    if (done && state[id+'_by']) {
+      const b = document.createElement('span');
+      const by = state[id+'_by'];
+      b.className = 'who who-' + by;
+      b.textContent = by==='mom' ? '✓ Mom' : '✓ Dad';
+      el.querySelector('.tags').appendChild(b);
+    }
+  });
+}
+
+function updateProgress() {
+  const done = ITEMS.filter(id => state[id]).length;
+  const total = ITEMS.length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('cntDisplay').textContent = done+'/'+total;
+  document.getElementById('progFill').style.width = pct+'%';
+  const msgs = ['Start Kaelen\'s day 💪','Off to a good start! 🌱','Halfway there! Keep going ⭐','Almost done — great job! 🎯','Perfect day for Kaelen! 🎉'];
+  document.getElementById('progTxt').textContent = msgs[Math.min(Math.floor(pct/25), 4)];
+  const b = document.getElementById('doneBanner');
+  done===total ? b.classList.add('show') : b.classList.remove('show');
+}
+
+function resetDay() {
+  if (!confirm('Reset today\'s checklist?')) return;
+  state = {}; cupsCount = 0;
+  localStorage.setItem(DAY_KEY, '{}');
+  localStorage.setItem(DAY_KEY+'_c', '0');
+  render(); updateProgress(); renderCups();
+}
+
+function renderCups() {
+  const c = document.getElementById('cups'); c.innerHTML = '';
+  for (let i=0; i<10; i++) {
+    const d = document.createElement('div');
+    d.className = 'cup' + (i<cupsCount?' on':'');
+    d.textContent = i<cupsCount ? '💧' : '○';
+    d.onclick = () => { cupsCount = cupsCount===i+1 ? i : i+1; localStorage.setItem(DAY_KEY+'_c', cupsCount); renderCups(); };
+    c.appendChild(d);
+  }
+  document.getElementById('waterNote').textContent = 'Tap each drop as Kaelen drinks (each = 4 oz). ' + (cupsCount*4) + ' oz so far today.';
+}
+
+function filterLabs(cls, btn) {
+  document.querySelectorAll('.filt-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.lab-row').forEach(row => {
+    const c = parseInt(row.dataset.cls);
+    let show = cls === 'all' ? true
+      : cls === '6' ? c === 6
+      : cls === '5' ? c === 5
+      : cls === '4' ? c === 4
+      : cls === '3' ? c === 3
+      : c <= 2;
+    row.style.display = show ? '' : 'none';
+  });
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.className='page');
+  document.querySelectorAll('.tab').forEach(t => t.className='tab');
+  document.getElementById('pg-'+name).className='page on';
+  el.className='tab on';
+}
+
+setDate(); setParent(parent); render(); updateProgress(); renderCups();
+</script>
+</body>
+</html>
