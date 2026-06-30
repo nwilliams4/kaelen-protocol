@@ -80,6 +80,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .who { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 99px; }
 .who-mom { background: #fce7f3; color: #be185d; }
 .who-dad { background: #dbeafe; color: #1d4ed8; }
+.who-other { background: #f3eefb; color: #6d28d9; }
 
 /* ── SOS ── */
 .sos-card { background: var(--orange-l); border: 1.5px solid #fed7aa; border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; }
@@ -202,6 +203,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <span>Who's with Kaelen?</span>
   <button class="pbtn on" id="btnMom" onclick="setParent('mom')">Mom</button>
   <button class="pbtn" id="btnDad" onclick="setParent('dad')">Dad</button>
+  <button class="pbtn" id="btnOther" onclick="setParent('other')">Other</button>
+</div>
+<div id="otherNameBar" style="display:none;background:#fff;border-bottom:1px solid var(--border);padding:8px 14px;display:none;align-items:center;gap:8px;">
+  <span style="font-size:12px;color:var(--gray);font-weight:600;white-space:nowrap;">Their name:</span>
+  <input id="otherNameInput" type="text" placeholder="e.g. Grandma, Nurse Lisa…" oninput="saveOtherName(this.value)"
+    style="flex:1;border:1.5px solid var(--border);border-radius:99px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--text);outline:none;font-family:inherit;" />
 </div>
 
 <!-- ══ TODAY ══ -->
@@ -446,6 +453,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="sos-item"><strong>OM Botanical Eczema &amp; Psoriasis Relief</strong> — Spot treatment on eczema flares. Softens skin.</div>
     <div class="sos-item"><strong>D-Hist Jr flare dose</strong> — If no improvement in 3 weeks on 2 tabs 1x daily → increase to 2 tabs 2x daily.</div>
     <div class="sos-item"><strong>Cranial Sacral Therapy</strong> — Dr. Hollon at Resolve Bodyworks, Cary St. For lymphatic + nervous system support.</div>
+  </div>
+
+  <div style="padding: 0 0 14px;">
+    <button onclick="emailSummary()" style="width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.3px;">📧 Email today's summary</button>
   </div>
 
   <div class="foot">
@@ -927,16 +938,32 @@ function setDate() {
   document.getElementById('dateDisplay').textContent = days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate();
 }
 
+function saveOtherName(val) {
+  localStorage.setItem('k_other_name', val);
+}
+function getDisplayName() {
+  if (parent === 'mom') return 'Mom';
+  if (parent === 'dad') return 'Dad';
+  return localStorage.getItem('k_other_name') || 'Other';
+}
 function setParent(p) {
   parent = p;
   localStorage.setItem('k_parent', p);
   document.getElementById('btnMom').className = 'pbtn' + (p==='mom'?' on':'');
   document.getElementById('btnDad').className = 'pbtn' + (p==='dad'?' on':'');
+  document.getElementById('btnOther').className = 'pbtn' + (p==='other'?' on':'');
+  const bar = document.getElementById('otherNameBar');
+  bar.style.display = p==='other' ? 'flex' : 'none';
+  if (p==='other') {
+    const saved = localStorage.getItem('k_other_name') || '';
+    document.getElementById('otherNameInput').value = saved;
+    document.getElementById('otherNameInput').focus();
+  }
 }
 
 function toggle(id) {
   state[id] = !state[id];
-  if (state[id]) state[id+'_by'] = parent; else delete state[id+'_by'];
+  if (state[id]) state[id+'_by'] = getDisplayName(); else delete state[id+'_by'];
   localStorage.setItem(DAY_KEY, JSON.stringify(state));
   render(); updateProgress();
 }
@@ -950,8 +977,9 @@ function render() {
     if (done && state[id+'_by']) {
       const b = document.createElement('span');
       const by = state[id+'_by'];
-      b.className = 'who who-' + by;
-      b.textContent = by==='mom' ? '✓ Mom' : '✓ Dad';
+      const cls = by==='Mom'?'mom': by==='Dad'?'dad':'other';
+      b.className = 'who who-' + cls;
+      b.textContent = '✓ ' + by;
       el.querySelector('.tags').appendChild(b);
     }
   });
@@ -1011,7 +1039,52 @@ function showTab(name, el) {
   el.className='tab on';
 }
 
-setDate(); setParent(parent); render(); updateProgress(); renderCups();
+function emailSummary() {
+  const d = new Date();
+  const dateStr = d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  const LABELS = {
+    'allentox-am': 'Allen-Tox II (morning)',
+    'water': 'Water + salt',
+    'am-supps': 'Morning supplements',
+    'tranquil-am': 'Tranquil Tummy (before breakfast)',
+    'breakfast': 'Breakfast',
+    'bath': 'Bath / shower',
+    'skin': 'Skin routine',
+    'castor': 'Castor oil massage',
+    'outside': 'Walk + grounding',
+    'joy': 'Joy activity',
+    'nettle': 'Nettle tea',
+    'tranquil-lunch': 'Tranquil Tummy (before lunch)',
+    'lunch': 'Lunch',
+    'tranquil-dinner': 'Tranquil Tummy (before dinner)',
+    'dinner': 'Dinner',
+    'pm-supps': 'Bedtime supplements',
+    'calm': 'Renzo Captain Calm'
+  };
+  const done = ITEMS.filter(id => state[id]);
+  const notDone = ITEMS.filter(id => !state[id]);
+  const whoLine = 'Logged by: ' + getDisplayName();
+  const cupsLine = 'Water: ' + (cupsCount * 4) + ' oz (' + cupsCount + ' cups)';
+  let body = "Kaelen's Daily Protocol — " + dateStr + "\n" + whoLine + "\n" + cupsLine + "\n\n";
+  body += "✅ COMPLETED (" + done.length + "/" + ITEMS.length + "):\n";
+  done.forEach(id => { body += "  ✓ " + LABELS[id] + (state[id+'_by'] ? ' (' + state[id+'_by'] + ')' : '') + "\n"; });
+  if (notDone.length) {
+    body += "\n⬜ NOT YET DONE:\n";
+    notDone.forEach(id => { body += "  · " + LABELS[id] + "\n"; });
+  }
+  body += "\nSent from Kaelen's Protocol App";
+  const subject = encodeURIComponent("Kaelen's Protocol — " + dateStr);
+  const bodyEnc = encodeURIComponent(body);
+  window.location.href = "mailto:nekialwilliams@gmail.com?subject=" + subject + "&body=" + bodyEnc;
+}
+
+setDate();
+setParent(parent);
+if (parent === 'other') {
+  document.getElementById('otherNameBar').style.display = 'flex';
+  document.getElementById('otherNameInput').value = localStorage.getItem('k_other_name') || '';
+}
+render(); updateProgress(); renderCups();
 </script>
 </body>
 </html>
